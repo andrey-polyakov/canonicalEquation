@@ -1,7 +1,7 @@
 package interview.canonical.equation.evaluator;
 
-import java.util.Collections;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by Андрей on 22.09.2016.
@@ -9,7 +9,7 @@ import java.util.Set;
 public class EquationChunk {
     private double floatingPointPart = 1.0;
     private long powerPart = 1;
-    private Set<Variable> variables = Collections.emptySet();
+    private Set<Variable> variables = new TreeSet<Variable>();
     private boolean positive = true;
 
     public double getFloatingPointPart() {
@@ -42,5 +42,10 @@ public class EquationChunk {
 
     public void setPositive(boolean positive) {
         this.positive = positive;
+    }
+
+    public void addVariable(Character symbol) {
+        Variable variable = new Variable(symbol.toString());
+        variables.add(variable);
     }
 }

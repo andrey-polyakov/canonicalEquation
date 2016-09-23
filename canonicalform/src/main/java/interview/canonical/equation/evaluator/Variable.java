@@ -4,13 +4,13 @@ package interview.canonical.equation.evaluator;
  * Created by Андрей on 22.09.2016.
  */
 public class Variable {
-    private String symbol;
+    private String letter;
 
-    public Variable(String symbol) {
-        this.symbol = symbol;
+    public Variable(String letter) {
+        this.letter = letter;
     }
 
-    public String getSymbol() {
-        return symbol;
+    public String getLetter() {
+        return letter;
     }
 }
