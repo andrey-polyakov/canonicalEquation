@@ -48,4 +48,24 @@ public class EquationChunk {
         Variable variable = new Variable(symbol.toString());
         variables.add(variable);
     }
+
+    public void negate() {
+        positive = !positive;
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        if (floatingPointPart != 1.0) {
+            sb.append(floatingPointPart);
+        }
+        for (Variable variable : variables) {
+            sb.append(variable.getLetter());
+        }
+        if (powerPart != 1) {
+            sb.append("^");
+            sb.append(powerPart);
+        }
+        return sb.toString();
+    }
 }

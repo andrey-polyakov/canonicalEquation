@@ -3,7 +3,7 @@ package interview.canonical.equation.evaluator;
 /**
  * Created by Андрей on 22.09.2016.
  */
-public class Variable {
+public class Variable implements Comparable<Variable> {
     private String letter;
 
     public Variable(String letter) {
@@ -11,6 +11,15 @@ public class Variable {
     }
 
     public String getLetter() {
+        return letter;
+    }
+
+    public int compareTo(Variable o) {
+        return letter.compareTo(o.letter);
+    }
+
+    @Override
+    public String toString() {
         return letter;
     }
 }
