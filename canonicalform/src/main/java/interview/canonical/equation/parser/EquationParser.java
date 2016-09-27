@@ -10,9 +10,6 @@ import static interview.canonical.equation.parser.EquationParser.AutomataExpecta
 import static java.util.Collections.unmodifiableSet;
 import static java.util.EnumSet.*;
 
-/**
- * Created by Андрей on 22.09.2016.
- */
 public class EquationParser {
 
     public static final char PLUS_SIGN = '+';
@@ -60,17 +57,18 @@ public class EquationParser {
 
     private static Set<AutomataExpectation> endings = unmodifiableSet(of(mantissaDigit, powerDigit));
 
-    private EquationChunk parsePart(String part) throws ParserException {
+    public static EquationChunk parsePart(String part) throws ParserException {
         EquationChunk chunk = new EquationChunk();
-        int numberStartIndex = -1, numberEndIndex = 0;
+        int numberStartIndex = -1, numberEndIndex = -1;
         int powerStartIndex = -1;
-        boolean powerSignIsNegative = false;
         Set<AutomataExpectation> expectations = allOf(AutomataExpectation.class);
         expectations.remove(endings);
         expectations.remove(powerSign);
         expectations.remove(powerDigit);
         expectations.remove(power);
         expectations.remove(floatingPoint);
+        expectations.remove(mantissaDigit);
+
         for (int index = 0; index < part.length(); index++) {
             char token = part.charAt(index);
             if (token == MINUS_SIGN) {
@@ -79,7 +77,7 @@ public class EquationParser {
                     continue;
                 }
                 if (expectations.contains(powerSign)) {
-                    powerSignIsNegative = !powerSignIsNegative;
+                    chunk.negatePower();
                     continue;
                 }
             }
@@ -89,7 +87,13 @@ public class EquationParser {
                 }
             }
             if (token == POWER_SIGN) {
+                if (numberStartIndex > 0 && numberEndIndex == -1) {
+                    numberEndIndex = index;
+                }
                 if (expectations.contains(powerSign)) {
+                    if (numberEndIndex == -1) {
+                        numberEndIndex = index;
+                    }
                     expectations.clear();
                     expectations.add(powerDigit);
                     expectations.add(powerSign);
@@ -105,8 +109,10 @@ public class EquationParser {
             }
             if (Character.isDigit(token)) {
                 if (expectations.contains(integerDigit)) {
-                    if (numberEndIndex == -1) {
+                    if (numberStartIndex == -1) {
                         numberStartIndex = index;
+                    } else {
+                        continue;
                     }
                     expectations.clear();
                     expectations.add(integerDigit);
@@ -133,8 +139,8 @@ public class EquationParser {
             }
             if (Character.isLetter(token)) {
                 if (expectations.contains(variable)) {
-                    if (numberEndIndex > -1) {
-                        numberEndIndex = index - 1;
+                    if (numberStartIndex > -1 && numberEndIndex == -1) {
+                        numberEndIndex = index;
                     }
                     expectations.clear();
                     expectations.add(powerSign);
@@ -152,7 +158,10 @@ public class EquationParser {
         chunk.setPowerPart(power);
         double number = 1;
         if (numberStartIndex > -1) {
-            number = Integer.parseInt(part.substring(numberStartIndex, numberEndIndex));
+            if (numberEndIndex == -1) {
+                numberEndIndex = part.length();
+            }
+            number = Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
         }
         chunk.setFloatingPointPart(number);
         return chunk;

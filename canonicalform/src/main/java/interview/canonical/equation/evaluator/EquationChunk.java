@@ -11,6 +11,7 @@ public class EquationChunk {
     private long powerPart = 1;
     private Set<Variable> variables = new TreeSet<Variable>();
     private boolean positive = true;
+    private boolean positivePower = true;
 
     public double getFloatingPointPart() {
         return floatingPointPart;
@@ -51,6 +52,18 @@ public class EquationChunk {
 
     public void negate() {
         positive = !positive;
+    }
+
+    public void negatePower() {
+        positivePower = !positivePower;
+    }
+
+    public boolean isPositivePower() {
+        return positivePower;
+    }
+
+    public void setPositivePower(boolean positivePower) {
+        this.positivePower = positivePower;
     }
 
     @Override
