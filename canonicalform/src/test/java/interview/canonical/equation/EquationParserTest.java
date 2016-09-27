@@ -25,21 +25,21 @@ public class EquationParserTest {
     public void missingRightPart() throws ParserException {
         String given = "x^2 = ";
         EquationParser unitUnderTest = new EquationParser();
-        Equation transformed = unitUnderTest.parse(given);
+        unitUnderTest.parse(given);
     }
 
     @Test(expected = ParserException.class)
     public void missingLeftPart() throws ParserException {
         String given = " = x ^ 2";
         EquationParser unitUnderTest = new EquationParser();
-        Equation transformed = unitUnderTest.parse(given);
+        unitUnderTest.parse(given);
     }
 
     @Test
     public void elementaryTest() throws ParserException {
         String given = "2.5xy^3";
         EquationChunk transformed = EquationParser.parsePart(given);
-        assertEquals(2.5, transformed.getFloatingPointPart(), 0.001);
+        assertEquals(2.5, transformed.getCoefficient(), 0.001);
         assertEquals(3, transformed.getPowerPart());
         assertTrue(transformed.isPositive());
         assertTrue(transformed.getVariables().contains(new Variable("x")));
@@ -50,7 +50,7 @@ public class EquationParserTest {
     public void negativePowerTest() throws ParserException {
         String given = "2.5^-3";
         EquationChunk transformed = EquationParser.parsePart(given);
-        assertEquals(2.5, transformed.getFloatingPointPart(), 0.001);
+        assertEquals(2.5, transformed.getCoefficient(), 0.001);
         assertEquals(3, transformed.getPowerPart());
         assertFalse(transformed.isPositivePower());
         assertTrue(transformed.isPositive());
@@ -60,7 +60,7 @@ public class EquationParserTest {
     public void negativeElementaryTest() throws ParserException {
         String given = "-1.111xy^3";
         EquationChunk transformed = EquationParser.parsePart(given);
-        assertEquals(1.111, transformed.getFloatingPointPart(), 0.001);
+        assertEquals(1.111, transformed.getCoefficient(), 0.001);
         assertEquals(3, transformed.getPowerPart());
         assertFalse(transformed.isPositive());
         assertTrue(transformed.getVariables().contains(new Variable("x")));
@@ -72,7 +72,7 @@ public class EquationParserTest {
     public void numberAloneTest() throws ParserException {
         String given = "998.0";
         EquationChunk transformed = EquationParser.parsePart(given);
-        assertEquals(998.0, transformed.getFloatingPointPart(), 0.001);
+        assertEquals(998.0, transformed.getCoefficient(), 0.001);
         assertEquals(1, transformed.getPowerPart());
         assertTrue(transformed.isPositive());
     }
@@ -81,7 +81,7 @@ public class EquationParserTest {
     public void numberDoubleNegationTest() throws ParserException {
         String given = "--20008.0";
         EquationChunk transformed = EquationParser.parsePart(given);
-        assertEquals(20008.0, transformed.getFloatingPointPart(), 0.001);
+        assertEquals(20008.0, transformed.getCoefficient(), 0.001);
         assertEquals(transformed.getPowerPart(), 1);
         assertTrue(transformed.isPositive());
     }
@@ -90,7 +90,7 @@ public class EquationParserTest {
     public void numberTripleNegationTest() throws ParserException {
         String given = "---+20008.0";
         EquationChunk transformed = EquationParser.parsePart(given);
-        assertEquals(20008.0, transformed.getFloatingPointPart(), 0.001);
+        assertEquals(20008.0, transformed.getCoefficient(), 0.001);
         assertEquals(transformed.getPowerPart(), 1);
         assertFalse(transformed.isPositive());
     }

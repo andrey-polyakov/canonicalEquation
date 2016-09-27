@@ -163,7 +163,10 @@ public class EquationParser {
             }
             number = Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
         }
-        chunk.setFloatingPointPart(number);
+        chunk.setCoefficient(number);
+        if (chunk.getPowerPart() == 0 && chunk.getCoefficient() == 0.0) {
+            throw new ParserException("Expression 0^0 is undefined");// https://www.math.hmc.edu/funfacts/ffiles/10005.3-5.shtml
+        }
         return chunk;
     }
 }

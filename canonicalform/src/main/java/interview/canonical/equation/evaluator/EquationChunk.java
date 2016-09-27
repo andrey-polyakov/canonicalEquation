@@ -7,18 +7,18 @@ import java.util.TreeSet;
  * Created by Андрей on 22.09.2016.
  */
 public class EquationChunk {
-    private double floatingPointPart = 1.0;
+    private double coefficient = 1.0;
     private long powerPart = 1;
     private Set<Variable> variables = new TreeSet<Variable>();
     private boolean positive = true;
     private boolean positivePower = true;
 
-    public double getFloatingPointPart() {
-        return floatingPointPart;
+    public double getCoefficient() {
+        return coefficient;
     }
 
-    public void setFloatingPointPart(double floatingPointPart) {
-        this.floatingPointPart = floatingPointPart;
+    public void setCoefficient(double coefficient) {
+        this.coefficient = coefficient;
     }
 
     public long getPowerPart() {
@@ -69,8 +69,8 @@ public class EquationChunk {
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        if (floatingPointPart != 1.0) {
-            sb.append(floatingPointPart);
+        if (coefficient != 1.0) {
+            sb.append(coefficient);
         }
         for (Variable variable : variables) {
             sb.append(variable.getLetter());
@@ -81,4 +81,19 @@ public class EquationChunk {
         }
         return sb.toString();
     }
+
+    public boolean isCompatible(EquationChunk another) {
+        if (isCoefficentOnly() && another.isCoefficentOnly()) {
+            return true;
+        }
+        if (variables.size() == another.variables.size() && variables.containsAll(another.variables)) {
+            return powerPart == another.powerPart;
+        }
+        return false;
+    }
+
+    public boolean isCoefficentOnly() {
+        return powerPart == 1 && variables.isEmpty();
+    }
+
 }
