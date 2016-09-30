@@ -26,10 +26,10 @@ public class EquationParser {
         String cleansed = homogenize(raw);
         String[] equationParts = cleansed.split("=");
         if (equationParts.length != 2) {
-            throw new ParserException("Equation must be comprised of two parts only separated by equality integerSign, e.g 'x = 0'");
+            throw new ParserException("Equation must be comprised of two parts only separated by equality factorSign, e.g 'x = 0'");
         }
         if (equationParts[0].equals("")) {
-            throw new ParserException("Left part from equal integerSign is missing.");
+            throw new ParserException("Left part from equal factorSign is missing.");
         }
         List<EquationPart> leftPart = parseSequence(equationParts[0]);
         List<EquationPart> rightPart = parseSequence(equationParts[1]);
@@ -46,7 +46,7 @@ public class EquationParser {
     }
 
     enum AutomataExpectation {
-        integerSign,
+        factorSign,
         integerDigit,
         floatingPoint,
         mantissaDigit,
@@ -73,17 +73,17 @@ public class EquationParser {
         for (int index = 0; index < part.length(); index++) {
             char token = part.charAt(index);
             if (token == MINUS_SIGN) {
-                if (expectations.contains(integerSign)) {
+                if (expectations.contains(factorSign)) {
                     positive = !positive;
                     continue;
                 }
                 if (expectations.contains(powerSign)) {
-                    numberStartIndex = index;
+                    powerStartIndex = index;
                     continue;
                 }
             }
             if (token == PLUS_SIGN) {
-                if (expectations.contains(powerSign) || expectations.contains(integerSign)) {
+                if (expectations.contains(powerSign) || expectations.contains(factorSign)) {
                     continue;
                 }
             }

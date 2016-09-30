@@ -4,6 +4,7 @@ import interview.canonical.equation.evaluator.Equation;
 import interview.canonical.equation.evaluator.EquationConverter;
 import interview.canonical.equation.parser.EquationParser;
 import interview.canonical.equation.parser.exception.ParserException;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,13 +13,15 @@ import static org.junit.Assert.assertEquals;
  */
 public class EquationConverterTest {
 
+    @Test
     public void exampleTest() throws ParserException {
         EquationConverter ec = new EquationConverter();
         String given = "x^2 + 3.5xy + y = y^2 - xy + y";
         EquationParser unitUnderTest = new EquationParser();
-        Equation transformed = unitUnderTest.parse(given);
-        assertEquals(given, transformed.toString());
-        //ec.convertToCanonicalForm()
+        Equation equation = unitUnderTest.parse(given);
+        assertEquals(given, equation.toString());
+        Equation canonical = ec.convertToCanonicalForm(equation);
+        canonical.toString();
     }
 
 }
