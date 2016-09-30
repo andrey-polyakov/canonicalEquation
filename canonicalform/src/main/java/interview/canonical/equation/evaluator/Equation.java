@@ -8,19 +8,19 @@ import java.util.List;
  */
 public class Equation {
 
-    private final List<EquationChunk> leftPart;
-    private final List<EquationChunk> rightPart;
+    private final List<EquationPart> leftPart;
+    private final List<EquationPart> rightPart;
 
-    public Equation(List<EquationChunk> chain, List<EquationChunk> rightPart) {
+    public Equation(List<EquationPart> chain, List<EquationPart> rightPart) {
         this.leftPart = Collections.unmodifiableList(chain);
         this.rightPart = Collections.unmodifiableList(rightPart);
     }
 
-    public List<EquationChunk> getLeftPart() {
+    public List<EquationPart> getLeftPart() {
         return leftPart;
     }
 
-    public List<EquationChunk> getRightPart() {
+    public List<EquationPart> getRightPart() {
         return rightPart;
     }
 

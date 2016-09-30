@@ -1,7 +1,8 @@
 package interview.canonical.equation.parser;
 
+import interview.canonical.equation.evaluator.Element;
 import interview.canonical.equation.evaluator.Equation;
-import interview.canonical.equation.evaluator.EquationChunk;
+import interview.canonical.equation.evaluator.EquationPart;
 import interview.canonical.equation.parser.exception.ParserException;
 
 import java.util.*;
@@ -30,14 +31,14 @@ public class EquationParser {
         if (equationParts[0].equals("")) {
             throw new ParserException("Left part from equal integerSign is missing.");
         }
-        List<EquationChunk> leftPart = parseSequence(equationParts[0]);
-        List<EquationChunk> rightPart = parseSequence(equationParts[1]);
+        List<EquationPart> leftPart = parseSequence(equationParts[0]);
+        List<EquationPart> rightPart = parseSequence(equationParts[1]);
         return new Equation(leftPart, rightPart);
     }
 
-    private List<EquationChunk> parseSequence(String equationPart) throws ParserException {
+    private List<EquationPart> parseSequence(String equationPart) throws ParserException {
         String[] parts = equationPart.split("(?=\\+|\\-)");
-        List<EquationChunk> sequence = new LinkedList<EquationChunk>();
+        List<EquationPart> sequence = new LinkedList<EquationPart>();
         for(String part : parts) {
             sequence.add(parsePart(part));
         }
@@ -57,10 +58,11 @@ public class EquationParser {
 
     private static Set<AutomataExpectation> endings = unmodifiableSet(of(mantissaDigit, powerDigit));
 
-    public static EquationChunk parsePart(String part) throws ParserException {
-        EquationChunk chunk = new EquationChunk();
-        int numberStartIndex = -1, numberEndIndex = -1;
-        int powerStartIndex = -1;
+    public static EquationPart parsePart(String part) throws ParserException {
+        int numberStartIndex = -1, numberEndIndex = -1, powerStartIndex = -1;
+        boolean positive = true;
+        List<String> variableNames = new ArrayList<>();
+        Map<String, Integer> variablePowers = new HashMap<>();
         Set<AutomataExpectation> expectations = allOf(AutomataExpectation.class);
         expectations.remove(endings);
         expectations.remove(powerSign);
@@ -68,16 +70,15 @@ public class EquationParser {
         expectations.remove(power);
         expectations.remove(floatingPoint);
         expectations.remove(mantissaDigit);
-
         for (int index = 0; index < part.length(); index++) {
             char token = part.charAt(index);
             if (token == MINUS_SIGN) {
                 if (expectations.contains(integerSign)) {
-                    chunk.negate();
+                    positive = !positive;
                     continue;
                 }
                 if (expectations.contains(powerSign)) {
-                    chunk.negatePower();
+                    numberStartIndex = index;
                     continue;
                 }
             }
@@ -91,9 +92,6 @@ public class EquationParser {
                     numberEndIndex = index;
                 }
                 if (expectations.contains(powerSign)) {
-                    if (numberEndIndex == -1) {
-                        numberEndIndex = index;
-                    }
                     expectations.clear();
                     expectations.add(powerDigit);
                     expectations.add(powerSign);
@@ -122,7 +120,6 @@ public class EquationParser {
                 if (expectations.contains(mantissaDigit)) {
                     expectations.clear();
                     expectations.add(mantissaDigit);
-                    expectations.add(powerSign);
                     expectations.add(variable);
                     continue;
                 }
@@ -131,8 +128,7 @@ public class EquationParser {
                         powerStartIndex = index;
                     }
                     expectations.clear();
-                    expectations.add(mantissaDigit);
-                    expectations.add(powerSign);
+                    expectations.add(powerDigit);
                     expectations.add(variable);
                     continue;
                 }
@@ -142,10 +138,16 @@ public class EquationParser {
                     if (numberStartIndex > -1 && numberEndIndex == -1) {
                         numberEndIndex = index;
                     }
+                    int power = 1;
+                    if (powerStartIndex > -1) {
+                        power = Integer.parseInt(part.substring(powerStartIndex, part.length()));
+                        powerStartIndex = -1;
+                    }
                     expectations.clear();
                     expectations.add(powerSign);
                     expectations.add(variable);
-                    chunk.addVariable(token);
+                    variableNames.add(String.valueOf(token));
+                    variablePowers.put(String.valueOf(token), power);
                     continue;
                 }
             }
@@ -154,8 +156,8 @@ public class EquationParser {
         int power = 1;
         if (powerStartIndex > -1) {
             power = Integer.parseInt(part.substring(powerStartIndex, part.length()));
+            variablePowers.put(variableNames.get(variableNames.size() - 1), power);
         }
-        chunk.setPowerPart(power);
         double number = 1;
         if (numberStartIndex > -1) {
             if (numberEndIndex == -1) {
@@ -163,10 +165,10 @@ public class EquationParser {
             }
             number = Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
         }
-        chunk.setCoefficient(number);
-        if (chunk.getPowerPart() == 0 && chunk.getCoefficient() == 0.0) {
-            throw new ParserException("Expression 0^0 is undefined");// https://www.math.hmc.edu/funfacts/ffiles/10005.3-5.shtml
+        Set<Element> elements = new HashSet<>();
+        for (int ii = 0; ii < variableNames.size(); ii++) {
+            elements.add(new Element(variableNames.get(ii), variablePowers.get(variableNames.get(ii))));
         }
-        return chunk;
+        return new EquationPart(new Element(number), new HashSet<>(elements), positive);
     }
 }
