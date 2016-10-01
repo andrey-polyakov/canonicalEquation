@@ -38,4 +38,28 @@ public class EquationConverterTest {
         assertEquals(1.0, canonical.getLeftPart().get(0).getConstant().getCoefficient(), 0.0001);
         assertEquals(0, canonical.getRightPart().get(0).getConstant().getCoefficient(), 0.0001);
     }
+
+    @Test
+    public void xEqualsZeroTest() throws ParserException {
+        EquationConverter ec = new EquationConverter();
+        String given = "2 = 2 - x";
+        EquationParser unitUnderTest = new EquationParser();
+        Equation equation = unitUnderTest.parse(given);
+        Equation canonical = ec.convertToCanonicalForm(equation);
+        assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("x")));
+        assertEquals(1.0, canonical.getLeftPart().get(0).getConstant().getCoefficient(), 0.0001);
+        assertEquals(0, canonical.getRightPart().get(0).getConstant().getCoefficient(), 0.0001);
+    }
+
+    @Test
+    public void wTest() throws ParserException {
+        EquationConverter ec = new EquationConverter();
+        String given = "-4 = 5";
+        EquationParser unitUnderTest = new EquationParser();
+        Equation equation = unitUnderTest.parse(given);
+        Equation canonical = ec.convertToCanonicalForm(equation);
+        assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("x")));
+        assertEquals(1.0, canonical.getLeftPart().get(0).getConstant().getCoefficient(), 0.0001);
+        assertEquals(0, canonical.getRightPart().get(0).getConstant().getCoefficient(), 0.0001);
+    }
 }
