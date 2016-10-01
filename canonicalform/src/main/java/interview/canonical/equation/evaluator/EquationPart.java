@@ -23,7 +23,7 @@ public class EquationPart {
     }
 
     public EquationPart(double value) {
-        positive = value > 0;
+        positive = value >= 0;
         constant = new Element(value);
         variables = Collections.emptySet();
     }
@@ -37,10 +37,7 @@ public class EquationPart {
     }
 
     public EquationPart negate() {
-        if (constant != null) {
-            return new EquationPart(-constant.getCoefficient());
-        }
-        return new EquationPart(variables, !positive);
+        return new EquationPart(constant, variables, !positive);
     }
 
     @Override
