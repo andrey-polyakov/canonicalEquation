@@ -6,22 +6,18 @@ import java.util.*;
 public class EquationPart {
     private final Set<Element> variables;
     private final Element constant;
-    private final boolean positive;
 
-    public EquationPart(Set<Element> variables, boolean positive) {
+    public EquationPart(Set<Element> variables) {
         this.variables = variables;
-        this.positive = positive;
         constant = new Element(1.0);
     }
 
-    public EquationPart(Element factor, Set<Element> variables, boolean positive) {
+    public EquationPart(Element factor, Set<Element> variables) {
         this.variables = variables;
-        this.positive = positive;
         constant = factor;
     }
 
     public EquationPart(double value) {
-        positive = value >= 0;
         constant = new Element(value);
         variables = Collections.emptySet();
     }
@@ -30,22 +26,28 @@ public class EquationPart {
         return variables;
     }
 
-    public boolean isPositive() {
-        return positive;
-    }
-
     public EquationPart negate() {
-        return new EquationPart(constant, variables, !positive);
+        return new EquationPart(constant.negate(), variables);
     }
 
     @Override
     public String toString() {
+        if (constant.getCoefficient() == 0.0) {
+            return "0";
+        }
         StringBuffer sb = new StringBuffer();
-        if (constant.getCoefficient() != 1.0 || variables.isEmpty()) {
-            sb.append(constant.getCoefficient());
-            if (constant.getPower() != 1) {
-                sb.append(constant.getPower());
+        if (constant.getCoefficient() == 1.0) {
+            if (variables.isEmpty()) {
+                sb.append(constant.getCoefficient());
             }
+        } else if (constant.getCoefficient() == -1.0) {
+            if (variables.isEmpty()) {
+                sb.append(constant.getCoefficient());
+            } else {
+                sb.append(" - ");
+            }
+        } else {
+            sb.append(constant.getCoefficient());
         }
         for (Element element : variables) {
             sb.append(element.getLetter());
@@ -75,27 +77,11 @@ public class EquationPart {
         if (!ec.isCompatibleWith(this)) {
             throw new IllegalArgumentException("Incompatible equation parts");
         }
-        double product = constant.getCoefficient();
-        if (positive) {
-            product = -1 * product;
-        }
-        if (ec.isPositive()) {
-            product += ec.getConstant().getCoefficient();
-        } else {
-            product -= ec.getConstant().getCoefficient();
-        }
+        double product = -constant.getCoefficient() + ec.getConstant().getCoefficient();
         if (product == 0) {
             return null;
         }
-        boolean sign = product > 0;
-        return new EquationPart(new Element(product), variables, sign);
-    }
-
-    public EquationPart addVariable(char token) {
-        Element element = new Element(String.valueOf(token));
-        Set<Element> extendedVirablesList = new HashSet<>(variables);
-        extendedVirablesList.add(element);
-        return new EquationPart(extendedVirablesList, positive);
+        return new EquationPart(new Element(product), variables);
     }
 
     public Element getConstant() {

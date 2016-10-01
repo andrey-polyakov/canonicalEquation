@@ -17,8 +17,7 @@ public class EquationParserTest {
     @Test
     public void exampleGivenInTaskDescription() throws ParserException {
         String given = "x^2 + 3.5xy + y = y^2 - xy + y";
-        EquationParser unitUnderTest = new EquationParser();
-        Equation transformed = unitUnderTest.parse(given);
+        Equation transformed = EquationParser.parse(given);
         assertEquals(given, transformed.toString());
     }
 
@@ -42,7 +41,6 @@ public class EquationParserTest {
         EquationPart transformed = EquationParser.parsePart(given);
         assertEquals(2.5, transformed.getConstant().getCoefficient(), 0.001);
         assertEquals(1, transformed.getConstant().getPower());
-        assertTrue(transformed.isPositive());
         assertTrue(transformed.getVariables().contains(new Element("x")));
         assertTrue(transformed.getVariables().contains(new Element("y", 3)));
     }
@@ -58,8 +56,7 @@ public class EquationParserTest {
     public void negativeElementaryTest() throws ParserException {
         String given = "-1.111xy^3";
         EquationPart transformed = EquationParser.parsePart(given);
-        assertEquals(1.111, transformed.getConstant().getCoefficient(), 0.001);
-        assertFalse(transformed.isPositive());
+        assertEquals(-1.111, transformed.getConstant().getCoefficient(), 0.001);
         assertTrue(transformed.getVariables().contains(new Element("x")));
         assertTrue(transformed.getVariables().contains(new Element("y", 3)));
         assertEquals(transformed.getVariables().size(), 2);
@@ -71,7 +68,6 @@ public class EquationParserTest {
         EquationPart transformed = EquationParser.parsePart(given);
         assertEquals(998.0, transformed.getConstant().getCoefficient(), 0.001);
         assertEquals(1, transformed.getConstant().getPower());
-        assertTrue(transformed.isPositive());
     }
 
     @Test
@@ -80,15 +76,13 @@ public class EquationParserTest {
         EquationPart transformed = EquationParser.parsePart(given);
         assertEquals(20008.0, transformed.getConstant().getCoefficient(), 0.001);
         assertEquals(transformed.getConstant().getPower(), 1);
-        assertTrue(transformed.isPositive());
     }
 
     @Test
     public void numberTripleNegationTest() throws ParserException {
         String given = "---+20008.0";
         EquationPart transformed = EquationParser.parsePart(given);
-        assertEquals(20008.0, transformed.getConstant().getCoefficient(), 0.001);
+        assertEquals(-20008.0, transformed.getConstant().getCoefficient(), 0.001);
         assertEquals(transformed.getConstant().getPower(), 1);
-        assertFalse(transformed.isPositive());
     }
 }

@@ -22,7 +22,7 @@ public class EquationParser {
         return input.replaceAll(" ", "");
     }
 
-    public Equation parse(String raw) throws ParserException {
+    public static Equation parse(String raw) throws ParserException {
         String cleansed = homogenize(raw);
         String[] equationParts = cleansed.split("=");
         if (equationParts.length != 2) {
@@ -36,7 +36,7 @@ public class EquationParser {
         return new Equation(leftPart, rightPart);
     }
 
-    private List<EquationPart> parseSequence(String equationPart) throws ParserException {
+    private static List<EquationPart> parseSequence(String equationPart) throws ParserException {
         String[] parts = equationPart.split("(?=\\+|\\-)");
         List<EquationPart> sequence = new LinkedList<EquationPart>();
         for(String part : parts) {
@@ -70,11 +70,12 @@ public class EquationParser {
         expectations.remove(power);
         expectations.remove(floatingPoint);
         expectations.remove(mantissaDigit);
+        double factor = 1;
         for (int index = 0; index < part.length(); index++) {
             char token = part.charAt(index);
             if (token == MINUS_SIGN) {
                 if (expectations.contains(factorSign)) {
-                    positive = !positive;
+                    factor *= -1;
                     continue;
                 }
                 if (expectations.contains(powerSign)) {
@@ -158,17 +159,19 @@ public class EquationParser {
             power = Integer.parseInt(part.substring(powerStartIndex, part.length()));
             variablePowers.put(variableNames.get(variableNames.size() - 1), power);
         }
-        double number = 1;
         if (numberStartIndex > -1) {
             if (numberEndIndex == -1) {
                 numberEndIndex = part.length();
             }
-            number = Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
+            factor *= Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
+            if (!positive) {
+                factor *= -1;
+            }
         }
         Set<Element> elements = new HashSet<>();
         for (int ii = 0; ii < variableNames.size(); ii++) {
             elements.add(new Element(variableNames.get(ii), variablePowers.get(variableNames.get(ii))));
         }
-        return new EquationPart(new Element(number), new HashSet<>(elements), positive);
+        return new EquationPart(new Element(factor), new HashSet<>(elements));
     }
 }

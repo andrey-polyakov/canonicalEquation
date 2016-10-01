@@ -3,6 +3,9 @@ package interview.canonical.equation.evaluator;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Represents equation. This class is immutable for the sae of design clarity.
+ */
 public class Equation {
 
     private final List<EquationPart> leftPart;
@@ -24,28 +27,18 @@ public class Equation {
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        if (!leftPart.get(0).isPositive()) {
-            sb.append(" - ");
-        }
         sb.append(leftPart.get(0));
         for (int ii = 1; ii < leftPart.size(); ii ++) {
-            if (leftPart.get(ii).isPositive()) {
+            if (leftPart.get(ii).getConstant().getCoefficient() > 0) {
                 sb.append(" + ");
-            } else {
-                sb.append(" - ");
             }
             sb.append(leftPart.get(ii));
         }
         sb.append(" = ");
-        if (!rightPart.get(0).isPositive()) {
-            sb.append(" - ");
-        }
         sb.append(rightPart.get(0));
         for (int ii = 1; ii < rightPart.size(); ii ++) {
-            if (rightPart.get(ii).isPositive()) {
+            if (rightPart.get(ii).getConstant().getCoefficient() > 0) {
                 sb.append(" + ");
-            } else {
-                sb.append(" - ");
             }
             sb.append(rightPart.get(ii));
         }

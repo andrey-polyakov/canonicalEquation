@@ -23,13 +23,13 @@ public class Element {
     public Element(double factor, long power) {
         letter = "";
         this.power = power;
-        coefficient = Math.abs(factor);;
+        coefficient = factor;
     }
 
     public Element(double factor) {
         letter = "";
         power = 1;
-        coefficient = Math.abs(factor);
+        coefficient = factor;
     }
 
     public double getCoefficient() {
@@ -42,10 +42,6 @@ public class Element {
 
     public long getPower() {
         return power;
-    }
-
-    public boolean isVariable() {
-        return letter.isEmpty();
     }
 
     @Override
@@ -87,5 +83,17 @@ public class Element {
         temp = Double.doubleToLongBits(coefficient);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
+    }
+
+    public Element negate() {
+        if (letter.isEmpty()) {
+            return new Element(-1 * coefficient, power);
+        } else {
+            return new Element(letter, power);
+        }
+    }
+
+    public boolean isNotZero() {
+        return coefficient != 0.0;
     }
 }
