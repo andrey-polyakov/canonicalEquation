@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * Created by Андрей on 01.10.2016.
+ * Launcher class.
  */
 public class Main {
 

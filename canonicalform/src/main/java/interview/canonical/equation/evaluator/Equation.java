@@ -3,9 +3,6 @@ package interview.canonical.equation.evaluator;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by Андрей on 22.09.2016.
- */
 public class Equation {
 
     private final List<EquationPart> leftPart;

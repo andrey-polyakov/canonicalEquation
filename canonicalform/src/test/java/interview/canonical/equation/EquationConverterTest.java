@@ -9,11 +9,9 @@ import interview.canonical.equation.parser.exception.ParserException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by Андрей on 27.09.2016.
- */
 public class EquationConverterTest {
 
     @Test
@@ -58,8 +56,11 @@ public class EquationConverterTest {
         EquationParser unitUnderTest = new EquationParser();
         Equation equation = unitUnderTest.parse(given);
         Equation canonical = ec.convertToCanonicalForm(equation);
-        assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("x")));
-        assertEquals(1.0, canonical.getLeftPart().get(0).getConstant().getCoefficient(), 0.0001);
+        assertTrue(canonical.getLeftPart().get(0).getVariables().isEmpty());
+        assertEquals(9.0, canonical.getLeftPart().get(0).getConstant().getCoefficient(), 0.0001);
+        assertFalse(canonical.getLeftPart().get(0).isPositive());
         assertEquals(0, canonical.getRightPart().get(0).getConstant().getCoefficient(), 0.0001);
     }
+
+
 }

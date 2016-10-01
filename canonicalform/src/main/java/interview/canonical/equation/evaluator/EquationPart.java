@@ -2,9 +2,7 @@ package interview.canonical.equation.evaluator;
 
 import java.util.*;
 
-/**
- * Created by Андрей on 22.09.2016.
- */
+
 public class EquationPart {
     private final Set<Element> variables;
     private final Element constant;
