@@ -148,9 +148,9 @@ public class EquationParser {
                     if (numberStartIndex > -1 && numberEndIndex == -1) {
                         numberEndIndex = index;
                     }
+                    assignPower(part, index);
                     variableNames.add(String.valueOf(token));
                     variablePowers.put(String.valueOf(token), 1);
-                    assignPower(part, index);
                     continue;
                 }
             }
@@ -189,7 +189,7 @@ public class EquationParser {
             power = Integer.parseInt(part.substring(powerStartIndex, index));
             powerStartIndex = -1;
         }
-        variablePowers.put(variableNames.peekFirst(), power);
+        variablePowers.put(variableNames.peekLast(), power);
     }
 
     private void reset() {

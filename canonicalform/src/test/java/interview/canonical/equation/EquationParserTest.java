@@ -23,6 +23,18 @@ public class EquationParserTest {
         assertEquals(given, transformed.toString());
     }
 
+    @Test
+    public void variablesOrder() throws ParserException {
+        String given = "x^-1y^-1z = zx^-1y^-1";
+        Equation transformed = new EquationParser().parse(given);
+        assertTrue(transformed.getLeftPart().get(0).getVariables().contains(new Element("x", -1)));
+        assertTrue(transformed.getLeftPart().get(0).getVariables().contains(new Element("y", -1)));
+        assertTrue(transformed.getLeftPart().get(0).getVariables().contains(new Element("z")));
+        assertTrue(transformed.getRightPart().get(0).getVariables().contains(new Element("x", -1)));
+        assertTrue(transformed.getRightPart().get(0).getVariables().contains(new Element("y", -1)));
+        assertTrue(transformed.getRightPart().get(0).getVariables().contains(new Element("z")));
+    }
+
     @Test(expected = ParserException.class)
     public void missingRightPart() throws ParserException {
         new EquationParser().parse("x^2 = ");
