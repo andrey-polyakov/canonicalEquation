@@ -74,7 +74,7 @@ public class EquationParser {
                 }
                 assignPower(part, index);
                 if (numberStartIndex > -1) {
-                    factor *= Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
+                    parseDouble(part);
                 }
                 result.add(new EquationPart(new Element(factor), createElements()));
                 factor = -1;
@@ -90,7 +90,7 @@ public class EquationParser {
                 }
                 assignPower(part, index);
                 if (numberStartIndex > -1) {
-                    factor *= Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
+                    parseDouble(part);
                 }
                 result.add(new EquationPart(new Element(factor), createElements()));
                 factor = 1;
@@ -165,7 +165,7 @@ public class EquationParser {
             if (numberEndIndex == -1) {
                 numberEndIndex = part.length();
             }
-            factor *= Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
+            parseDouble(part);
         }
         if (variablePowers.values().contains(0)) {
             result.add(new EquationPart(new Element(0), Collections.EMPTY_SET));
@@ -173,6 +173,14 @@ public class EquationParser {
         }
         result.add(new EquationPart(new Element(factor), new HashSet<>(createElements())));
         return result;
+    }
+
+    private void parseDouble(String part) throws ParserException {
+        String[] chunks = part.split("\\.");
+        if (chunks.length == 2 && chunks[1].length() > 16) {
+            throw new ParserException("Only 11 bits of exponent supported. Please shring floating point of " + part);
+        }
+        factor *= Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
     }
 
     private void assignPower(String part, int index) {
