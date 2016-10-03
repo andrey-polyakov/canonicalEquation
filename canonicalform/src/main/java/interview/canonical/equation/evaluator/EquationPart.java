@@ -7,11 +7,6 @@ public class EquationPart {
     private final Set<Element> variables;
     private final Element constant;
 
-    public EquationPart(Set<Element> variables) {
-        this.variables = variables;
-        constant = new Element(1.0);
-    }
-
     public EquationPart(Element factor, Set<Element> variables) {
         this.variables = variables;
         constant = factor;

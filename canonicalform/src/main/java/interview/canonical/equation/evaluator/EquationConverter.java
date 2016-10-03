@@ -6,10 +6,10 @@ import java.util.List;
 
 public class EquationConverter {
 
-    public Equation convertToCanonicalForm(Equation input) {
+    public static Equation convertToCanonicalForm(Equation input) {
         List<EquationPart> left = new LinkedList<>(input.getLeftPart());
         List<EquationPart> right = new LinkedList<>(input.getRightPart());
-        Iterator<EquationPart> literator = left.iterator(), riterator = right.iterator();
+        Iterator<EquationPart> literator, riterator = right.iterator();
         while (riterator.hasNext()) {
             EquationPart rightChunk = riterator.next();
             boolean matched = false;

@@ -13,7 +13,7 @@ import static java.util.EnumSet.*;
 
 public class EquationParser {
 
-    public static final char PLUS_SIGN = '+';
+    public static final char PLUS_TOKEN = '+';
     public static final char MINUS_SIGN = '-';
     public static final char POWER_SIGN = '^';
     public static final char POINT_SIGN = '.';
@@ -22,58 +22,48 @@ public class EquationParser {
         return input.replaceAll(" ", "");
     }
 
-    public static Equation parse(String raw) throws ParserException {
+    public Equation parse(String raw) throws ParserException {
         String cleansed = homogenize(raw);
         String[] equationParts = cleansed.split("=");
         if (equationParts.length != 2) {
             throw new ParserException("Equation must be comprised of two parts only separated by equality factorSign, e.g 'x = 0'");
         }
-        if (equationParts[0].equals("")) {
-            throw new ParserException("Left part from equal factorSign is missing.");
+        if (equationParts[0].isEmpty() ^ equationParts[1].isEmpty()) {
+            throw new ParserException("At least one part of the equation is empty.");
         }
         List<EquationPart> leftPart = parseSequence(equationParts[0]);
         List<EquationPart> rightPart = parseSequence(equationParts[1]);
         return new Equation(leftPart, rightPart);
     }
 
-    private static List<EquationPart> parseSequence(String equationPart) throws ParserException {
-        String[] parts = equationPart.split("(?=\\+|\\-)");
-        List<EquationPart> sequence = new LinkedList<EquationPart>();
-        for(String part : parts) {
-            sequence.add(parsePart(part));
-        }
-        return sequence;
-    }
-
     enum AutomataExpectation {
         factorSign,
-        integerDigit,
+        factorDigit,
         floatingPoint,
         mantissaDigit,
         variable,
+        powerToken,
         powerSign,
-        power,
         powerDigit;
     }
 
-    private static Set<AutomataExpectation> endings = unmodifiableSet(of(mantissaDigit, powerDigit));
+    private static Set<AutomataExpectation> defaultExpectations = unmodifiableSet(of(factorSign, factorDigit, variable));
+    private Deque<String> variableNames = new LinkedList<>();
+    private Map<String, Integer> variablePowers = new HashMap<>();
+    private Set<AutomataExpectation> expectations = copyOf(defaultExpectations);
+    private double factor = 1;
+    private int numberStartIndex = -1, numberEndIndex = -1, powerStartIndex = -1;
 
-    public static EquationPart parsePart(String part) throws ParserException {
-        int numberStartIndex = -1, numberEndIndex = -1, powerStartIndex = -1;
-        boolean positive = true;
-        List<String> variableNames = new ArrayList<>();
-        Map<String, Integer> variablePowers = new HashMap<>();
-        Set<AutomataExpectation> expectations = allOf(AutomataExpectation.class);
-        expectations.remove(endings);
-        expectations.remove(powerSign);
-        expectations.remove(powerDigit);
-        expectations.remove(power);
-        expectations.remove(floatingPoint);
-        expectations.remove(mantissaDigit);
-        double factor = 1;
+    public List<EquationPart> parseSequence(String part) throws ParserException {
+        reset();
+        factor = 1;
+        List<EquationPart> result = new LinkedList<>();
         for (int index = 0; index < part.length(); index++) {
             char token = part.charAt(index);
             if (token == MINUS_SIGN) {
+                if (numberStartIndex > -1 && numberEndIndex == -1) {
+                    numberEndIndex = index;
+                }
                 if (expectations.contains(factorSign)) {
                     factor *= -1;
                     continue;
@@ -82,17 +72,33 @@ public class EquationParser {
                     powerStartIndex = index;
                     continue;
                 }
+                assignPower(part, index);
+                if (numberStartIndex > -1) {
+                    factor *= Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
+                }
+                result.add(new EquationPart(new Element(factor), createElements()));
+                factor = -1;
+                reset();
+                continue;
             }
-            if (token == PLUS_SIGN) {
+            if (token == PLUS_TOKEN) {
+                if (numberStartIndex > -1 && numberEndIndex == -1) {
+                    numberEndIndex = index;
+                }
                 if (expectations.contains(powerSign) || expectations.contains(factorSign)) {
                     continue;
                 }
+                assignPower(part, index);
+                if (numberStartIndex > -1) {
+                    factor *= Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
+                }
+                result.add(new EquationPart(new Element(factor), createElements()));
+                factor = 1;
+                reset();
+                continue;
             }
             if (token == POWER_SIGN) {
-                if (numberStartIndex > 0 && numberEndIndex == -1) {
-                    numberEndIndex = index;
-                }
-                if (expectations.contains(powerSign)) {
+                if (expectations.contains(powerToken)) {
                     expectations.clear();
                     expectations.add(powerDigit);
                     expectations.add(powerSign);
@@ -107,14 +113,14 @@ public class EquationParser {
                 }
             }
             if (Character.isDigit(token)) {
-                if (expectations.contains(integerDigit)) {
+                if (expectations.contains(factorDigit)) {
                     if (numberStartIndex == -1) {
                         numberStartIndex = index;
                     } else {
                         continue;
                     }
                     expectations.clear();
-                    expectations.add(integerDigit);
+                    expectations.add(factorDigit);
                     expectations.add(floatingPoint);
                     continue;
                 }
@@ -136,19 +142,15 @@ public class EquationParser {
             }
             if (Character.isLetter(token)) {
                 if (expectations.contains(variable)) {
+                    expectations.clear();
+                    expectations.add(powerToken);
+                    expectations.add(variable);
                     if (numberStartIndex > -1 && numberEndIndex == -1) {
                         numberEndIndex = index;
                     }
-                    int power = 1;
-                    if (powerStartIndex > -1) {
-                        power = Integer.parseInt(part.substring(powerStartIndex, part.length()));
-                        powerStartIndex = -1;
-                    }
-                    expectations.clear();
-                    expectations.add(powerSign);
-                    expectations.add(variable);
                     variableNames.add(String.valueOf(token));
-                    variablePowers.put(String.valueOf(token), power);
+                    variablePowers.put(String.valueOf(token), 1);
+                    assignPower(part, index);
                     continue;
                 }
             }
@@ -157,21 +159,46 @@ public class EquationParser {
         int power = 1;
         if (powerStartIndex > -1) {
             power = Integer.parseInt(part.substring(powerStartIndex, part.length()));
-            variablePowers.put(variableNames.get(variableNames.size() - 1), power);
+            variablePowers.put(variableNames.peekLast(), power);
         }
         if (numberStartIndex > -1) {
             if (numberEndIndex == -1) {
                 numberEndIndex = part.length();
             }
             factor *= Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
-            if (!positive) {
-                factor *= -1;
-            }
         }
+        if (variablePowers.values().contains(0)) {
+            result.add(new EquationPart(new Element(0), Collections.EMPTY_SET));
+            return result;
+        }
+        result.add(new EquationPart(new Element(factor), new HashSet<>(createElements())));
+        return result;
+    }
+
+    private void assignPower(String part, int index) {
+        int power = 1;
+        if (powerStartIndex > -1) {
+            power = Integer.parseInt(part.substring(powerStartIndex, index));
+            powerStartIndex = -1;
+        }
+        variablePowers.put(variableNames.peekFirst(), power);
+    }
+
+    private void reset() {
+        variableNames.clear();
+        variablePowers.clear();
+        expectations = copyOf(defaultExpectations);
+        numberStartIndex = -1;
+        numberEndIndex = -1;
+        powerStartIndex = -1;
+    }
+
+    private Set<Element> createElements() {
         Set<Element> elements = new HashSet<>();
-        for (int ii = 0; ii < variableNames.size(); ii++) {
-            elements.add(new Element(variableNames.get(ii), variablePowers.get(variableNames.get(ii))));
+        while (!variableNames.isEmpty()) {
+            String name = variableNames.removeFirst();
+            elements.add(new Element(name, variablePowers.get(name)));
         }
-        return new EquationPart(new Element(factor), new HashSet<>(elements));
+        return elements;
     }
 }
