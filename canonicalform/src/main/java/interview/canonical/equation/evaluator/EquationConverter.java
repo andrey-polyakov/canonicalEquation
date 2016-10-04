@@ -1,8 +1,8 @@
 package interview.canonical.equation.evaluator;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import com.sun.org.apache.xpath.internal.operations.Variable;
+
+import java.util.*;
 
 public class EquationConverter {
 
@@ -39,9 +39,20 @@ public class EquationConverter {
             }
         }
         LinkedList<EquationPart> leftCopy = new LinkedList<>(left);
+        List<Assumption> conditions = new LinkedList<>();
         while (true) {
             startOver:
             for (EquationPart leftChunk : leftCopy) {
+                for (Element v : leftChunk.getVariables()) {
+                    if (v.getPower() == 0) {
+                        conditions.add(new Assumption(v.getLetter() + "!=0"));
+                        left.remove(leftChunk);
+                        Set<Element> variables = new HashSet<>(leftChunk.getVariables());
+                        variables.remove(v);
+                        left.add(new EquationPart(leftChunk.getConstant(), variables));
+                        break startOver;
+                    }
+                }
                 for (EquationPart potentialMatch : leftCopy) {
                     if (leftChunk.isCompatibleWith(potentialMatch) && leftChunk != potentialMatch) {
                         double product = leftChunk.getConstant().getCoefficient() + potentialMatch.getConstant().getCoefficient();
@@ -62,7 +73,7 @@ public class EquationConverter {
         if (left.isEmpty()) {
             left.add(new EquationPart(0.0));
         }
-        return new Equation(left, right);
+        return new Equation(left, right, conditions);
     }
 
 }

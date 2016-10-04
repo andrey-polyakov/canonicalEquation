@@ -87,4 +87,12 @@ public class EquationConverterTest {
         assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("y")));
         assertEquals(2, canonical.getLeftPart().get(0).getConstant().getCoefficient(), 0.0001);
     }
+
+    @Test
+    public void xInPowerZeroTest() throws ParserException {
+        Equation equation = new EquationParser().parse("x^0 = 0");
+        Equation canonical = EquationConverter.convertToCanonicalForm(equation);
+        assertEquals(1.0, canonical.getLeftPart().get(0).getConstant().getCoefficient(), 0.001);
+        assertEquals(0.0, canonical.getRightPart().get(0).getConstant().getCoefficient(), 0.001);
+    }
 }

@@ -1,5 +1,6 @@
 package interview.canonical.equation.parser;
 
+import interview.canonical.equation.evaluator.Assumption;
 import interview.canonical.equation.evaluator.Element;
 import interview.canonical.equation.evaluator.Equation;
 import interview.canonical.equation.evaluator.EquationPart;
@@ -33,7 +34,8 @@ public class EquationParser {
         }
         List<EquationPart> leftPart = parseSequence(equationParts[0]);
         List<EquationPart> rightPart = parseSequence(equationParts[1]);
-        return new Equation(leftPart, rightPart);
+        List<Assumption> conditions = Collections.emptyList();
+        return new Equation(leftPart, rightPart, conditions);
     }
 
     enum AutomataExpectation {

@@ -2,15 +2,10 @@ package interview.canonical.equation;
 
 import interview.canonical.equation.evaluator.Element;
 import interview.canonical.equation.evaluator.Equation;
-import interview.canonical.equation.evaluator.EquationConverter;
-import interview.canonical.equation.evaluator.EquationPart;
 import interview.canonical.equation.parser.EquationParser;
 import interview.canonical.equation.parser.exception.ParserException;
-import org.junit.Assert;
 import org.junit.Test;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -147,4 +142,5 @@ public class EquationParserTest {
         Equation equation = new EquationParser().parse(given);
         assertTrue(equation.getLeftPart().get(0).getVariables().contains(new Element("x", 3)));
     }
+
 }
