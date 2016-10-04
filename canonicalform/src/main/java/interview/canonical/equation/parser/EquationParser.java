@@ -34,7 +34,7 @@ public class EquationParser {
         }
         List<EquationPart> leftPart = parseSequence(equationParts[0]);
         List<EquationPart> rightPart = parseSequence(equationParts[1]);
-        List<Assumption> conditions = Collections.emptyList();
+        Set<Assumption> conditions = Collections.emptySet();
         return new Equation(leftPart, rightPart, conditions);
     }
 

@@ -3,7 +3,7 @@ package interview.canonical.equation.evaluator;
 /**
  * Condition under which given equation is valid.
  */
-public class Assumption {
+public class Assumption implements Comparable<Assumption> {
 
     public final String condition;
 
@@ -14,5 +14,10 @@ public class Assumption {
     @Override
     public String toString() {
         return condition;
+    }
+
+    @Override
+    public int compareTo(Assumption o) {
+        return condition.compareTo(o.condition);
     }
 }

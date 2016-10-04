@@ -3,6 +3,7 @@ package interview.canonical.equation.evaluator;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents equation. This class is immutable for the sae of design clarity.
@@ -11,9 +12,9 @@ public class Equation {
 
     private final List<EquationPart> leftPart;
     private final List<EquationPart> rightPart;
-    private final List<Assumption> conditions;
+    private final Set<Assumption> conditions;
 
-    public Equation(List<EquationPart> chain, List<EquationPart> rightPart, List<Assumption> conditions) {
+    public Equation(List<EquationPart> chain, List<EquationPart> rightPart, Set<Assumption> conditions) {
         this.leftPart = Collections.unmodifiableList(chain);
         this.rightPart = Collections.unmodifiableList(rightPart);
         this.conditions = conditions;

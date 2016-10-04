@@ -10,12 +10,29 @@ public class EquationConverter {
         List<EquationPart> left = new LinkedList<>(input.getLeftPart());
         List<EquationPart> right = new LinkedList<>(input.getRightPart());
         Iterator<EquationPart> literator, riterator = right.iterator();
+        Set<Assumption> conditions = new TreeSet<>();
         while (riterator.hasNext()) {
             EquationPart rightChunk = riterator.next();
             boolean matched = false;
             literator = left.iterator();
+            startOver:
             while (literator.hasNext()) {
                 EquationPart leftChunk = literator.next();
+                boolean foundZeroPower = false;
+                for (Element v : leftChunk.getVariables()) {
+                    if (v.getPower() <= 0) {
+                        conditions.add(new Assumption(v.getLetter() + "!=0"));
+                        if (v.getPower() == 0) {
+                            left.remove(leftChunk);
+                            Set<Element> variables = new HashSet<>(leftChunk.getVariables());
+                            variables.remove(v);
+                            left.add(new EquationPart(leftChunk.getConstant(), variables));
+                        }
+                    }
+                }
+                if (foundZeroPower) {
+                    break startOver;
+                }
                 if (leftChunk.isCompatibleWith(rightChunk)) {
                     matched = true;
                     EquationPart product = rightChunk.negateAndMergeWith(leftChunk);
@@ -39,7 +56,6 @@ public class EquationConverter {
             }
         }
         LinkedList<EquationPart> leftCopy = new LinkedList<>(left);
-        List<Assumption> conditions = new LinkedList<>();
         while (true) {
             startOver:
             for (EquationPart leftChunk : leftCopy) {
