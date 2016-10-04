@@ -128,9 +128,23 @@ public class EquationParserTest {
     }
 
     @Test
+    public void xInPowerOneTest() throws ParserException {
+        String given = "x^1 = 0";
+        Equation equation = new EquationParser().parse(given);
+        assertTrue(equation.getLeftPart().get(0).getVariables().contains(new Element("x", 1)));
+    }
+
+    @Test
+    public void xSquaredTest() throws ParserException {
+        String given = "x^4x^-2 = 0";
+        Equation equation = new EquationParser().parse(given);
+        assertTrue(equation.getLeftPart().get(0).getVariables().contains(new Element("x", 2)));
+    }
+
+    @Test
     public void xCubeTest() throws ParserException {
         String given = "xx^2 = 0";
         Equation equation = new EquationParser().parse(given);
-        assertTrue(equation.getLeftPart().get(0).getVariables().contains(new Element("y", 3)));
+        assertTrue(equation.getLeftPart().get(0).getVariables().contains(new Element("x", 3)));
     }
 }

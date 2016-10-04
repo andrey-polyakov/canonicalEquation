@@ -48,7 +48,7 @@ public class EquationParser {
     }
 
     private static Set<AutomataExpectation> defaultExpectations = unmodifiableSet(of(factorSign, factorDigit, variable));
-    private Deque<String> variableNames = new LinkedList<>();
+    private String lastVariable;
     private Map<String, Long> variablePowers = new HashMap<>();
     private Set<AutomataExpectation> expectations = copyOf(defaultExpectations);
     private double factor = 1;
@@ -153,14 +153,16 @@ public class EquationParser {
                     if (numberStartIndex > -1 && numberEndIndex == -1) {
                         numberEndIndex = index;
                     }
-                    variableNames.add(String.valueOf(token));
-                    assignPower(part, index);
+                    if (lastVariable != null) {
+                        assignPower(part, index);
+                    }
+                    lastVariable = String.valueOf(token);
                     continue;
                 }
             }
             throw new ParserException("Unexpected token in the expression: " + token +
                     " at index " + index +
-                    ", expected instead: " + expectations);
+                    ", instead expected: " + expectations);
         }
         assignPower(part, part.length());
         if (numberStartIndex > -1) {
@@ -174,13 +176,11 @@ public class EquationParser {
     }
 
     private boolean haveUnprocessedItems() {
-        return numberStartIndex > -1 || !variableNames.isEmpty();
+        return numberStartIndex > -1 || lastVariable != null;
     }
 
     private EquationPart createEquationPart(String part, int index) throws ParserException {
-        if (expectations.contains(powerDigit)) {
             assignPower(part, index);
-        }
         if (numberStartIndex > -1) {
             parseFactor(part.substring(numberStartIndex, numberEndIndex));
         }
@@ -198,7 +198,10 @@ public class EquationParser {
     }
 
     private void assignPower(String part, int index) throws ParserException {
-        Long power = null;
+        if (lastVariable == null) {
+            return;
+        }
+        Long power = Long.valueOf(1);
         if (powerStartIndex > -1) {
             try {
                 power = Long.parseLong(part.substring(powerStartIndex, index));
@@ -207,18 +210,24 @@ public class EquationParser {
             }
             powerStartIndex = -1;
         }
-        Long existingPower = variablePowers.get(variableNames.peekLast());
-        if (power == null && existingPower != null) {
-            power = existingPower;
-        } else if (power != null && existingPower != null) {
-            power = power + existingPower;
+        Long existingPower = variablePowers.get(lastVariable);
+        if (existingPower != null) {
+            if (power == null) {
+                power = existingPower;
+            } else {
+                power = power + existingPower;
+            }
         }
-        variablePowers.put(variableNames.peekLast(), power);
+/*        if (part.length() == index && power == 1) {
+            power--;
+        }*/
+        variablePowers.put(lastVariable, power);
+        lastVariable = null;
     }
 
     private void reset() {
         factor = 1;
-        variableNames.clear();
+        lastVariable = null;
         variablePowers.clear();
         expectations = copyOf(defaultExpectations);
         numberStartIndex = -1;
@@ -228,9 +237,8 @@ public class EquationParser {
 
     private Set<Element> createElements() {
         Set<Element> elements = new HashSet<>();
-        while (!variableNames.isEmpty()) {
-            String name = variableNames.removeFirst();
-            elements.add(new Element(name, variablePowers.get(name)));
+        for (Map.Entry<String, Long> pair: variablePowers.entrySet()) {
+            elements.add(new Element(pair.getKey(), pair.getValue()));
         }
         return elements;
     }
