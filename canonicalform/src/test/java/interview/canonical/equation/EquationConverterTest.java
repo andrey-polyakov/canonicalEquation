@@ -84,7 +84,7 @@ public class EquationConverterTest {
     public void leftPartCanonization() throws ParserException {
         Equation e = new EquationParser().parse("y+y+y=y");
         Equation canonical = EquationConverter.convertToCanonicalForm(e);
-        assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("2")));
-        assertEquals(2, canonical.getLeftPart().get(1).getConstant().getCoefficient(), 0.0001);
+        assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("y")));
+        assertEquals(2, canonical.getLeftPart().get(0).getConstant().getCoefficient(), 0.0001);
     }
 }

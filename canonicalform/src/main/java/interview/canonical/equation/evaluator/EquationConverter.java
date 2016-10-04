@@ -38,6 +38,24 @@ public class EquationConverter {
                 left.add(equationPart.negate());
             }
         }
+        LinkedList<EquationPart> leftCopy = new LinkedList<>(left);
+        while (true) {
+            startOver:
+            for (EquationPart leftChunk : leftCopy) {
+                for (EquationPart potentialMatch : leftCopy) {
+                    if (leftChunk.isCompatibleWith(potentialMatch) && leftChunk != potentialMatch) {
+                        double product = leftChunk.getConstant().getCoefficient() + potentialMatch.getConstant().getCoefficient();
+                        left.remove(leftChunk);
+                        left.remove(potentialMatch);
+                        if (product != 0.0) {
+                            left.add(new EquationPart(new Element(product), leftChunk.getVariables()));
+                        }
+                        break startOver;
+                    }
+                }
+            }
+            break;
+        }
         if (right.isEmpty()) {
             right.add(new EquationPart(0.0));
         }
