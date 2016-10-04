@@ -49,7 +49,7 @@ public class EquationParser {
 
     private static Set<AutomataExpectation> defaultExpectations = unmodifiableSet(of(factorSign, factorDigit, variable));
     private Deque<String> variableNames = new LinkedList<>();
-    private Map<String, Integer> variablePowers = new HashMap<>();
+    private Map<String, Long> variablePowers = new HashMap<>();
     private Set<AutomataExpectation> expectations = copyOf(defaultExpectations);
     private double factor = 1;
     private int numberStartIndex = -1, numberEndIndex = -1, powerStartIndex = -1;
@@ -65,6 +65,9 @@ public class EquationParser {
                     numberEndIndex = index;
                 }
                 if (expectations.contains(factorSign)) {
+                    if (haveUnprocessedItems()) {
+                        result.add(createEquationPart(part, index));
+                    }
                     factor *= -1;
                     continue;
                 }
@@ -72,29 +75,22 @@ public class EquationParser {
                     powerStartIndex = index;
                     continue;
                 }
-                assignPower(part, index);
-                if (numberStartIndex > -1) {
-                    parseDouble(part);
-                }
-                result.add(new EquationPart(new Element(factor), createElements()));
-                factor = -1;
-                reset();
                 continue;
             }
             if (token == PLUS_TOKEN) {
                 if (numberStartIndex > -1 && numberEndIndex == -1) {
                     numberEndIndex = index;
                 }
-                if (expectations.contains(powerSign) || expectations.contains(factorSign)) {
+                if (expectations.contains(factorSign)) {
+                    if (haveUnprocessedItems()) {
+                        result.add(createEquationPart(part, index));
+                    }
                     continue;
                 }
-                assignPower(part, index);
-                if (numberStartIndex > -1) {
-                    parseDouble(part);
+                if (expectations.contains(powerSign)) {
+                    powerStartIndex = index;
+                    continue;
                 }
-                result.add(new EquationPart(new Element(factor), createElements()));
-                factor = 1;
-                reset();
                 continue;
             }
             if (token == POWER_SIGN) {
@@ -122,12 +118,15 @@ public class EquationParser {
                     expectations.clear();
                     expectations.add(factorDigit);
                     expectations.add(floatingPoint);
+                    expectations.add(factorSign);
+                    expectations.add(variable);
                     continue;
                 }
                 if (expectations.contains(mantissaDigit)) {
                     expectations.clear();
                     expectations.add(mantissaDigit);
                     expectations.add(variable);
+                    expectations.add(factorSign);
                     continue;
                 }
                 if (expectations.contains(powerDigit)) {
@@ -137,62 +136,88 @@ public class EquationParser {
                     expectations.clear();
                     expectations.add(powerDigit);
                     expectations.add(variable);
+                    expectations.add(factorSign);
                     continue;
                 }
             }
             if (Character.isLetter(token)) {
                 if (expectations.contains(variable)) {
+                    if (expectations.contains(powerDigit)) {
+                        assignPower(part, index);
+                    }
                     expectations.clear();
                     expectations.add(powerToken);
                     expectations.add(variable);
+                    expectations.add(factorSign);
+                    expectations.add(factorDigit);
                     if (numberStartIndex > -1 && numberEndIndex == -1) {
                         numberEndIndex = index;
                     }
-                    assignPower(part, index);
                     variableNames.add(String.valueOf(token));
-                    variablePowers.put(String.valueOf(token), 1);
+                    assignPower(part, index);
                     continue;
                 }
             }
-            throw new ParserException("Unexpected token in the expression: " + token);
+            throw new ParserException("Unexpected token in the expression: " + token +
+                    " at index " + index +
+                    ", expected instead: " + expectations);
         }
-        int power = 1;
-        if (powerStartIndex > -1) {
-            power = Integer.parseInt(part.substring(powerStartIndex, part.length()));
-            variablePowers.put(variableNames.peekLast(), power);
-        }
+        assignPower(part, part.length());
         if (numberStartIndex > -1) {
             if (numberEndIndex == -1) {
                 numberEndIndex = part.length();
             }
-            parseDouble(part);
-        }
-        if (variablePowers.values().contains(0)) {
-            result.add(new EquationPart(new Element(0), Collections.EMPTY_SET));
-            return result;
+            parseFactor(part.substring(numberStartIndex, numberEndIndex));
         }
         result.add(new EquationPart(new Element(factor), new HashSet<>(createElements())));
         return result;
     }
 
-    private void parseDouble(String part) throws ParserException {
+    private boolean haveUnprocessedItems() {
+        return numberStartIndex > -1 || !variableNames.isEmpty();
+    }
+
+    private EquationPart createEquationPart(String part, int index) throws ParserException {
+        if (expectations.contains(powerDigit)) {
+            assignPower(part, index);
+        }
+        if (numberStartIndex > -1) {
+            parseFactor(part.substring(numberStartIndex, numberEndIndex));
+        }
+        EquationPart eq = new EquationPart(new Element(factor), createElements());
+        reset();
+        return eq;
+    }
+
+    private void parseFactor(String part) throws ParserException {
         String[] chunks = part.split("\\.");
         if (chunks.length == 2 && chunks[1].length() > 16) {
             throw new ParserException("Only 11 bits of exponent supported. Please shring floating point of " + part);
         }
-        factor *= Double.parseDouble(part.substring(numberStartIndex, numberEndIndex));
+        factor *= Double.parseDouble(part);
     }
 
-    private void assignPower(String part, int index) {
-        int power = 1;
+    private void assignPower(String part, int index) throws ParserException {
+        Long power = null;
         if (powerStartIndex > -1) {
-            power = Integer.parseInt(part.substring(powerStartIndex, index));
+            try {
+                power = Long.parseLong(part.substring(powerStartIndex, index));
+            } catch (NumberFormatException nfe) {
+                throw new ParserException("Failed to parser power at position " + powerStartIndex + "-"+ index);
+            }
             powerStartIndex = -1;
+        }
+        Long existingPower = variablePowers.get(variableNames.peekLast());
+        if (power == null && existingPower != null) {
+            power = existingPower;
+        } else if (power != null && existingPower != null) {
+            power = power + existingPower;
         }
         variablePowers.put(variableNames.peekLast(), power);
     }
 
     private void reset() {
+        factor = 1;
         variableNames.clear();
         variablePowers.clear();
         expectations = copyOf(defaultExpectations);

@@ -27,23 +27,32 @@ public class EquationParserTest {
     public void variablesOrder() throws ParserException {
         String given = "x^-1y^-1z = zx^-1y^-1";
         Equation transformed = new EquationParser().parse(given);
-        assertTrue(transformed.getLeftPart().get(0).getVariables().contains(new Element("x", -1)));
-        assertTrue(transformed.getLeftPart().get(0).getVariables().contains(new Element("y", -1)));
+        assertTrue(transformed.getLeftPart().get(0).getVariables().contains(new Element("x", Long.valueOf(-1))));
+        assertTrue(transformed.getLeftPart().get(0).getVariables().contains(new Element("y", Long.valueOf(-1))));
         assertTrue(transformed.getLeftPart().get(0).getVariables().contains(new Element("z")));
         assertTrue(transformed.getRightPart().get(0).getVariables().contains(new Element("x", -1)));
         assertTrue(transformed.getRightPart().get(0).getVariables().contains(new Element("y", -1)));
         assertTrue(transformed.getRightPart().get(0).getVariables().contains(new Element("z")));
     }
 
+    @Test
+    public void variablesOrder2() throws ParserException {
+        String given = "x^-1-2y^-1x = xy^-1+x-1";
+        Equation transformed = new EquationParser().parse(given);
+        assertTrue(transformed.getLeftPart().get(0).getVariables().contains(new Element("x", -1)));
+        assertTrue(transformed.getLeftPart().get(1).getVariables().contains(new Element("y", -1)));
+        assertEquals(-2, transformed.getLeftPart().get(1).getConstant().getCoefficient(), 0.0001);
+        assertTrue(transformed.getLeftPart().get(1).getVariables().contains(new Element("x")));
+        assertTrue(transformed.getRightPart().get(0).getVariables().contains(new Element("x")));
+        assertTrue(transformed.getRightPart().get(0).getVariables().contains(new Element("y", -1)));
+        assertTrue(transformed.getRightPart().get(1).getVariables().contains(new Element("x")));
+        assertEquals(-1, transformed.getRightPart().get(2).getConstant().getCoefficient(), 0.0001);
+
+    }
+
     @Test(expected = ParserException.class)
     public void missingRightPart() throws ParserException {
         new EquationParser().parse("x^2 = ");
-    }
-
-    @Test()
-    public void zeroPower() throws ParserException {
-        Equation e = new EquationParser().parse("x^0=0");
-        Assert.assertFalse(e.getLeftPart().get(0).getConstant().isNotZero());
     }
 
     @Test(expected = ParserException.class)
@@ -116,5 +125,12 @@ public class EquationParserTest {
         Equation equation = new EquationParser().parse(given);
         assertTrue(equation.getLeftPart().get(0).getVariables().contains(new Element("y", 45)));
         assertTrue(equation.getLeftPart().get(0).getVariables().contains(new Element("x", 2)));
+    }
+
+    @Test
+    public void xCubeTest() throws ParserException {
+        String given = "xx^2 = 0";
+        Equation equation = new EquationParser().parse(given);
+        assertTrue(equation.getLeftPart().get(0).getVariables().contains(new Element("y", 3)));
     }
 }

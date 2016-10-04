@@ -8,9 +8,13 @@ public class Element {
     private final long power;
     private final double coefficient;
 
-    public Element(String variableName, long power) {
+    public Element(String variableName, Long power) {
         letter = variableName;
-        this.power = power;
+        if (power == null) {
+            this.power = 1;
+        } else {
+            this.power = power;
+        }
         coefficient = 1.0;
     }
 
@@ -30,6 +34,10 @@ public class Element {
         letter = "";
         power = 1;
         coefficient = factor;
+    }
+
+    public Element(String x, int i) {
+        this(x, new Long(i));
     }
 
     public double getCoefficient() {

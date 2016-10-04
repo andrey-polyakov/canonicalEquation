@@ -37,7 +37,7 @@ public class EquationConverterTest {
         String given = "x ^ 2 = y ^ 2 + x^2";
         Equation equation = new EquationParser().parse(given);
         Equation canonical = EquationConverter.convertToCanonicalForm(equation);
-        assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("y", 2)));
+        assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("y", Long.valueOf(2))));
         assertEquals(-1.0, canonical.getLeftPart().get(0).getConstant().getCoefficient(), 0.0001);
         assertEquals(0, canonical.getRightPart().get(0).getConstant().getCoefficient(), 0.0001);
     }
@@ -75,8 +75,16 @@ public class EquationConverterTest {
     public void negativePower() throws ParserException {
         Equation e = new EquationParser().parse("x^-1 = x+1");
         Equation canonical = EquationConverter.convertToCanonicalForm(e);
-        assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("x", -1)));
+        assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("x", Long.valueOf(-1))));
         assertTrue(canonical.getLeftPart().get(1).getVariables().contains(new Element("x")));
         assertEquals(-1, canonical.getLeftPart().get(2).getConstant().getCoefficient(), 0.0001);
+    }
+
+    @Test()
+    public void leftPartCanonization() throws ParserException {
+        Equation e = new EquationParser().parse("y+y+y=y");
+        Equation canonical = EquationConverter.convertToCanonicalForm(e);
+        assertTrue(canonical.getLeftPart().get(0).getVariables().contains(new Element("2")));
+        assertEquals(2, canonical.getLeftPart().get(1).getConstant().getCoefficient(), 0.0001);
     }
 }
