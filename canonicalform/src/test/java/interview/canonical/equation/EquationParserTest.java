@@ -143,4 +143,11 @@ public class EquationParserTest {
         assertTrue(equation.getLeftPart().get(0).getVariables().contains(new Element("x", 3)));
     }
 
+    @Test
+    public void zeroTimesXTest() throws ParserException {
+        String given = "0x = 0";
+        Equation equation = new EquationParser().parse(given);
+        assertEquals(0, equation.getLeftPart().get(0).getConstant().getCoefficient(), 0.0001);
+    }
+
 }

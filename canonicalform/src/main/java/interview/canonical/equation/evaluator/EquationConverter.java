@@ -44,13 +44,15 @@ public class EquationConverter {
             startOver:
             for (EquationPart leftChunk : leftCopy) {
                 for (Element v : leftChunk.getVariables()) {
-                    if (v.getPower() == 0) {
+                    if (v.getPower() <= 0) {
                         conditions.add(new Assumption(v.getLetter() + "!=0"));
-                        left.remove(leftChunk);
-                        Set<Element> variables = new HashSet<>(leftChunk.getVariables());
-                        variables.remove(v);
-                        left.add(new EquationPart(leftChunk.getConstant(), variables));
-                        break startOver;
+                        if (v.getPower() == 0) {
+                            left.remove(leftChunk);
+                            Set<Element> variables = new HashSet<>(leftChunk.getVariables());
+                            variables.remove(v);
+                            left.add(new EquationPart(leftChunk.getConstant(), variables));
+                            break startOver;
+                        }
                     }
                 }
                 for (EquationPart potentialMatch : leftCopy) {
