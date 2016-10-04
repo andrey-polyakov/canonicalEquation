@@ -194,7 +194,7 @@ public class EquationParser {
     private void parseFactor(String part) throws ParserException {
         String[] chunks = part.split("\\.");
         if (chunks.length == 2 && chunks[1].length() > 16) {
-            throw new ParserException("Only 11 bits of exponent supported. Please shring floating point of " + part);
+            throw new ParserException("Only 11 bits of exponent supported. Please contract exponent of " + part);
         }
         factor *= Double.parseDouble(part);
     }
