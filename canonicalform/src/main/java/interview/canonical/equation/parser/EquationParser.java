@@ -10,7 +10,8 @@ import java.util.*;
 
 import static interview.canonical.equation.parser.EquationParser.AutomataExpectation.*;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.EnumSet.*;
+import static java.util.EnumSet.copyOf;
+import static java.util.EnumSet.of;
 
 public class EquationParser {
 
@@ -220,9 +221,6 @@ public class EquationParser {
                 power = power + existingPower;
             }
         }
-/*        if (part.length() == index && power == 1) {
-            power--;
-        }*/
         variablePowers.put(lastVariable, power);
         lastVariable = null;
     }

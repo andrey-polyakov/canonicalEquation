@@ -1,7 +1,5 @@
 package interview.canonical.equation.evaluator;
 
-import com.sun.org.apache.xpath.internal.operations.Variable;
-
 import java.util.*;
 
 public class EquationConverter {

@@ -1,6 +1,7 @@
 package interview.canonical.equation.evaluator;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
 
 
 public class EquationPart {
